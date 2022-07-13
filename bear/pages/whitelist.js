@@ -180,7 +180,7 @@ export default function Algorand() {
     //
     return (
       <div className={styles.container}>
-            <button onClick={connect}>CONNECT TO WALLET</button><br />
+            <button onClick={connect}>CONNECT YOUR WALLET</button><br />
             <br />
             <h3 className={styles.h3}>Connected Address: </h3> {address}
             <h3 className={styles.h3}> Balance: </h3> {balance} ALGO
