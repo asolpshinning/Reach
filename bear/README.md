@@ -1,34 +1,27 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# My Singular Repo for Reach Bear Challenge!
 
-## Getting Started
+This template provides an easy way for me to participate in fun challenges, and just use this repo.
 
-First, run the development server:
+## Participation on 07/13/2022 (Dapp Created) : [**Check out the live dapp here**](https://reach.sundayakins.repl.co/whitelist)
+[**Check out the rsh code here** ](https://github.com/asolpshinning/Reach/blob/main/bear/rsh/whitelist.rsh)
 
-```bash
-npm run dev
-# or
-yarn dev
-```
+### Program Requirements for 07/13/2022:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Level 3 
+- Build out a front end GUI
+- Use the framework of your choice
+- It will contain as many files as you need to complete the task
+- Use a testnet token
+- Create your own testnet token and import the asset ID number from the Deployer UI
+- Allow users to submit their wallets to the application
+- The first 5 users to submit their wallets are whitelisted
+- Users after 5 receive an error message stating the list is full
+- The whitelisted addresses receive tokens
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
-
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+### Checklist
+- Did your program store an Address? YES
+- Did you use Map or Set? YES
+- Did you provide solutions for all of the problems on your program level? YES
+- Are you submitting for just one level? YES
+- My submission is my original work? YES
