@@ -3,6 +3,7 @@
 This template provides an easy way for me to participate in fun challenges, and just use this repo.
 
 ## Participation on 07/13/2022 (Dapp Created) : [**Check out the live dapp here**](https://reach.sundayakins.repl.co/whitelist)
+[**Check out the rsh code here** ](https://github.com/asolpshinning/Reach/blob/main/bear/rsh/whitelist.rsh)
 
 ### Program Requirements for 07/13/2022:
 
