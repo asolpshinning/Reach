@@ -3,7 +3,7 @@
 This template provides an easy way for me to participate in fun challenges, and just use this repo.
 
 ## Participation on 07/13/2022 (Dapp Created) :
-[**Check out the VERCEL live dapp here**](https://reachbear-whitelist.vercel.app/) 
+[**Check out the VERCEL live dapp here**](https://reachbear-whitelist.vercel.app/whitelist) 
 
 [**Check out the REPLIT live dapp here**](https://reach.sundayakins.repl.co/whitelist) 
 
