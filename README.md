@@ -4,6 +4,10 @@ This template provides an easy way for me to participate in fun challenges, and 
 
 ## Participation on 07/30/2022 (Check Demo Video below) :
 [**Check out the video demo**](https://vimeo.com/735006862/8b61fc92aa) 
+[**Check out the VERCEL live dapp here**](https://reachbear-whitelist.vercel.app/vault)
+[**Check out the rsh code here**](https://github.com/asolpshinning/Reach/blob/main/bear/rsh/vault.rsh)
+[**Check out the NextJS repo here**](https://github.com/asolpshinning/Reach/tree/main/bear)
+
 
 ## Participation on 07/13/2022 (Dapp Created) :
 [**Check out the VERCEL live dapp here**](https://reachbear-whitelist.vercel.app/whitelist) 
