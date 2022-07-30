@@ -2,6 +2,9 @@
 
 This template provides an easy way for me to participate in fun challenges, and just use this repo.
 
+## Participation on 07/30/2022 (Check Demo Video below) :
+[**Check out the video demo**](https://vimeo.com/735006862/8b61fc92aa) 
+
 ## Participation on 07/13/2022 (Dapp Created) :
 [**Check out the VERCEL live dapp here**](https://reachbear-whitelist.vercel.app/whitelist) 
 
