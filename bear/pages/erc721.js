@@ -86,7 +86,7 @@ export default function Erc721() {
                 gas: 300000,
                 gasPrice: null
             }).on('confirmation', function(confirmationNumber, receipt){
-                while(count <= 1){
+                while(count < 1){
                     deployToken(); 
                     getNftUri()
                     count++
