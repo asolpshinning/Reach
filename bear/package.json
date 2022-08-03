@@ -10,10 +10,12 @@
   },
   "dependencies": {
     "@reach-sh/stdlib": "^0.1.11-rc.2",
+    "bulma": "^0.9.4",
     "next": "12.2.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "url-parse": "^1.5.10"
+    "url-parse": "^1.5.10",
+    "web3": "^1.7.5"
   },
   "devDependencies": {
     "eslint": "8.19.0",
