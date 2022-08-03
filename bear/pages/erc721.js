@@ -28,7 +28,7 @@ export default function Erc721() {
     const connectWallet = async () => {
         setError('')
         setSuccessMsg('')
-        /* check if MetaMask is installed */
+        /* ////check if MetaMask is installed */
         if (typeof window !== "undefined" && typeof window.ethereum !== "undefined") {
           try {
             /* request wallet connection */
