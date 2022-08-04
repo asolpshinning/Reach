@@ -8,16 +8,17 @@ import 'bulma/css/bulma.css'
 import loadStdlib from '@reach-sh/stdlib'
 
 export default function Erc721() {
-    const ctcId = '0x7a403d1f0CF58EDa5D3047d856D2525cbbc993f2';
+    //const ctcId = '0x7a403d1f0CF58EDa5D3047d856D2525cbbc993f2';
     const [web3, setWeb3] = useState()
-    const [address, setAddress] = useState()
-    const [nftCtc, setNftCtc] = useState()
+    const address = useRef('')
+    const ctcId = useRef('')
     const [error, setError] = useState('')
     const [successMsg, setSuccessMsg] = useState('')
     const [modal, setModal] = useState(null);
     const [image, setImage] = useState(null);
     const [metaData, setMetaData] = useState(null);
     const [URL, setURL] = useState('');
+    const wallConn = useRef(false)
 
     //useful function to getELement by id
     const getElement = (id) => {
@@ -31,27 +32,40 @@ export default function Erc721() {
         /* ////check if MetaMask is installed */
         if (typeof window !== "undefined" && typeof window.ethereum !== "undefined") {
           try {
+            if(getElement('erc721nftId').length <= 8){alert(`Please enter a valid NFT CONTRACT ID first`); return}
             /* request wallet connection */
             await window.ethereum.request({ method: "eth_requestAccounts"})
             /* create web3 instance & set to state */
             const web3_ = new Web3(window.ethereum)
             /* set web3 instance in React state */
             setWeb3(web3_)
-            if(web3_.providers){alert(`Metamask Wallet already connected`)}
+            if(wallConn.current == true){alert(`Metamask Wallet already connected`)}
             /* get list of accounts */
             const accounts = await web3_.eth.getAccounts()
-            console.log(accounts)
             /* set account 1 to React state */
-            setAddress(accounts[0])
-    
+            address.current = (accounts[0])
+            const nftCtcId = getElement('erc721nftId');
             /* create local contract copy */
-            const ctc = nftContract(web3_)
-            setNftCtc(ctc) 
-    
+            const ctc = await nftContract(web3_, nftCtcId)
+            ctcId.current = ctc 
+            //write a function that finds how many enteries is in an object
+            const count = (obj) => {
+                let count = 0;
+                for(let key in obj){
+                    if(obj.hasOwnProperty(key)){
+                        count++;
+                    }
+                }
+                return count;
+            }
+            while(wallConn.current == false){
+                if(count(ctc.methods)>=1) {wallConn.current = true; ctcId.current = ctc; alert(`Fun fact: There are ${count(ctc.methods)} methods in the nft contract`)}
+                if(wallConn.current == true){alert(`Metamask Wallet connected`)}
+            }
             /* window.ethereum.on('accountsChanged', async () => {
               const accounts = await web3.eth.getAccounts()
               console.log(accounts[0])
-              setAddress(accounts[0])
+              addreess.current = (accounts[0])
             }) */
           } catch(err) {
             setError(err.message)
@@ -65,11 +79,12 @@ export default function Erc721() {
       
 
     const bridgeNFT = async () => {
-        const ctcid = getElement('erc721nftId');
+        if(wallConn.current !== true){alert('Let us connect your wallet...')}
+        if(wallConn.current !== true) connectWallet()        
         const tokenId = parseInt(getElement('nftUrl'))
         setError('')
         setSuccessMsg('')
-        console.log(`address of person bridging :: ${address}`)
+        console.log(`address of person bridging :: ${address.current}`)
         const deployToken = async() => {
             let reach = await loadStdlib.loadStdlib({ REACH_CONNECTOR_MODE: "ALGO" });
             reach.setWalletFallback(reach.walletFallback({ providerEnv: 'TestNet', MyAlgoConnect }));
@@ -80,9 +95,10 @@ export default function Erc721() {
             alert(`This is the ID of the bridged NFT on Algorand:  ${reach.bigNumberToNumber(bT.id._hex)}`);
         }
         let count = 0
-        try {
-            nftCtc.methods.transferFrom(address, ctcid, tokenId).send({
-                from: address,
+        if(wallConn.current == true) try {
+            if(isNaN(tokenId)){alert(`Please enter a valid NFT ID. You entered this invalid value: "${getElement('nftUrl')}"`); return}
+            ctcId.current.methods.transferFrom(address.current, '0x7a403d1f0CF58EDa5D3047d856D2525cbbc993f2', tokenId).send({
+                from: address.current,
                 gas: 300000,
                 gasPrice: null
             }).on('confirmation', function(confirmationNumber, receipt){
@@ -91,7 +107,6 @@ export default function Erc721() {
                     getNftUri()
                     count++
                 }
-                
             })
         } catch(err) {
             alert(err.message)
@@ -102,10 +117,12 @@ export default function Erc721() {
     }
 
     const checkNftBalance = async () => {
-        const id = getElement('erc721nftId')
-        try {
-            const bal = await nftCtc.methods.balanceOf(id).call();
-            alert (`NFT balance of ${id} is ${bal}`)
+        if(wallConn.current !== true){alert('Let us connect your wallet...')}
+        if(wallConn.current !== true) connectWallet()
+        let ctcid = ctcId.current
+        if(wallConn.current == true) try {
+            const bal = await ctcid.methods.balanceOf(address.current).call();
+            alert (`NFT balance of ${address.current} is ${bal}`)
         } catch(err) {
             alert(err.message)
             setError(err.message)
@@ -113,11 +130,12 @@ export default function Erc721() {
     }
 
     const getNftUri = async () => {
-        setSuccessMsg('')
-        setError('')
-        const tokenId = getElement('nftUrl')
-        try {
-            const uri = await nftCtc.methods.tokenURI(tokenId).call(); setURL(uri)
+        if(wallConn.current !== true){alert('Let us connect your wallet...')}
+        if(wallConn.current !== true) connectWallet()            
+        const tokenId = parseInt(getElement('nftUrl'))
+        if(isNaN(tokenId)){alert(`Please enter a valid NFT ID. You entered this invalid value: "${getElement('nftUrl')}"`); return}
+        if(wallConn.current == true) try {
+            const uri = await ctcId.current.methods.tokenURI(tokenId).call(); setURL(uri)
                 const gateway = uri.replace(
                     "ipfs://",
                     "https://gateway.ipfscdn.io/ipfs/",
