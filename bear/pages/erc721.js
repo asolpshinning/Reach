@@ -85,14 +85,23 @@ export default function Erc721() {
         setError('')
         setSuccessMsg('')
         console.log(`address of person bridging :: ${address.current}`)
+
         const deployToken = async() => {
-            let reach = await loadStdlib.loadStdlib({ REACH_CONNECTOR_MODE: "ALGO" });
+            /* let reach = await loadStdlib.loadStdlib({ REACH_CONNECTOR_MODE: "ALGO" });
             reach.setWalletFallback(reach.walletFallback({ providerEnv: 'TestNet', MyAlgoConnect }));
             const accCreator = await reach.getDefaultAccount();
             //Launch tokens
             const bT = await reach.launchToken(accCreator, metaData.symbol, metaData.Name, {decimals: 0, supply: 1, url: URL, metadataHash: ''});
             console.log('This is the ID of the bridged token on Algorand: ', reach.bigNumberToNumber(bT.id._hex));
-            alert(`This is the ID of the bridged NFT on Algorand:  ${reach.bigNumberToNumber(bT.id._hex)}`);
+            alert(`This is the ID of the bridged NFT on Algorand:  ${reach.bigNumberToNumber(bT.id._hex)}`); */
+            const res = await fetch('api/bridgeToAlgo',{
+                method : 'POST',
+                body: JSON.stringify({'bridger' : address.current, 'name': 0, 'url': URL, 'metadataHash': 'metaDataHash', 'tokenId': tokenId}),
+                headers: {'Content-Type' : 'application/json'},
+            })
+            const data = await res.json();
+            console.log(data)
+            alert(`This is the ID of your "NFT" waiting for you to claim: `, data.NFT);
         }
         let count = 0
         if(wallConn.current == true) try {
@@ -103,8 +112,8 @@ export default function Erc721() {
                 gasPrice: null
             }).on('confirmation', function(confirmationNumber, receipt){
                 while(count < 1){
+                    getNftUri();
                     deployToken(); 
-                    getNftUri()
                     count++
                 }
             })
@@ -152,6 +161,24 @@ export default function Erc721() {
             setError(err.message)
         }
     }
+
+    const deployToken = async() => {
+        /* let reach = await loadStdlib.loadStdlib({ REACH_CONNECTOR_MODE: "ALGO" });
+        reach.setWalletFallback(reach.walletFallback({ providerEnv: 'TestNet', MyAlgoConnect }));
+        const accCreator = await reach.getDefaultAccount();
+        //Launch tokens
+        const bT = await reach.launchToken(accCreator, metaData.symbol, metaData.Name, {decimals: 0, supply: 1, url: URL, metadataHash: ''});
+        console.log('This is the ID of the bridged token on Algorand: ', reach.bigNumberToNumber(bT.id._hex));
+        alert(`This is the ID of the bridged NFT on Algorand:  ${reach.bigNumberToNumber(bT.id._hex)}`); */
+        const res = await fetch('api/bridgeToAlgo',{
+            method : 'POST',
+            body: JSON.stringify({'bridger' : address, 'name': 0, 'url': URL, 'metadataHash': 'metaDataHash', 'tokenId': parseInt(getElement('nftUrl'))}),
+            headers: {'Content-Type' : 'application/json'},
+        })
+        const data = await res.json();
+        console.log(`This is your contract id: ${data.contractId}`)
+        alert(`This is the ID of your "NFT" waiting for you to claim:  ${data.NFTid}`);
+    }
     return (
         <div className={styles.container}>
             <nav className="navbar mt-4 mb-4">
@@ -170,7 +197,9 @@ export default function Erc721() {
             <div className = 'mb-5'>
                 <p>Enter the token ID</p>
                 <input class = 'input is-info is-medium mb-2' id = 'nftUrl'></input>
-                <button className="button is-link" onClick = {bridgeNFT}>Bridge NFT</button>
+                <button className="button is-link" onClick = {bridgeNFT}>Bridge NFT</button> <br/><br/>
+                <button className="button is-danger" onClick = {deployToken}>BackEndTesting(Do not use)</button>
+
             </div>
             <div className = 'mb-5'>
                 
