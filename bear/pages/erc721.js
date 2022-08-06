@@ -163,21 +163,17 @@ export default function Erc721() {
     }
 
     const deployToken = async() => {
-        /* let reach = await loadStdlib.loadStdlib({ REACH_CONNECTOR_MODE: "ALGO" });
-        reach.setWalletFallback(reach.walletFallback({ providerEnv: 'TestNet', MyAlgoConnect }));
-        const accCreator = await reach.getDefaultAccount();
-        //Launch tokens
-        const bT = await reach.launchToken(accCreator, metaData.symbol, metaData.Name, {decimals: 0, supply: 1, url: URL, metadataHash: ''});
-        console.log('This is the ID of the bridged token on Algorand: ', reach.bigNumberToNumber(bT.id._hex));
-        alert(`This is the ID of the bridged NFT on Algorand:  ${reach.bigNumberToNumber(bT.id._hex)}`); */
         const res = await fetch('api/bridgeToAlgo',{
             method : 'POST',
             body: JSON.stringify({'bridger' : address, 'name': 0, 'url': URL, 'metadataHash': 'metaDataHash', 'tokenId': parseInt(getElement('nftUrl'))}),
             headers: {'Content-Type' : 'application/json'},
         })
         const data = await res.json();
-        console.log(`This is your contract id: ${data.contractId}`)
+        alert(`This contract now holds your NFT waiting to be claimed (write it down): ${data.contractId}`)
         alert(`This is the ID of your "NFT" waiting for you to claim:  ${data.NFTid}`);
+        if(data.contractId != `deployment pending`){
+            alert(`You can now go ahead and claim your NFT on Algorand. Click claim NFT`)
+        }
     }
     return (
         <div className={styles.container}>

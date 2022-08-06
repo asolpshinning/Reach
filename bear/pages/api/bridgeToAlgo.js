@@ -44,7 +44,8 @@ import * as backendCtc from '../../reachBackend/test.main.mjs';
                     iDeployed: (msg) => {
                         console.log(msg + ` and ${ctcId} is the contract ID`);
                     }
-                })}),
+                }) ///.then(save NFT in the contract for bridger to claim) => Start from Here
+            }),
             
         ])
         return [ctcId, nft];
