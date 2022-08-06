@@ -1,5 +1,6 @@
 const loadStdlib = require( "@reach-sh/stdlib");
 import * as backendCtc from '../../reachBackend/test.main.mjs';
+const private_key = require('./env.js').PRIVATE_KEY
 
  const handler = async(request, res) => {
     let req = request.body;
@@ -10,7 +11,7 @@ import * as backendCtc from '../../reachBackend/test.main.mjs';
     const deploySmartContract = async() => {
         //connect wallet
         const stdlib = loadStdlib.loadStdlib({ REACH_CONNECTOR_MODE: "ALGO" });
-        const accCreator = await stdlib.newAccountFromMnemonic('purse embrace special devote swear yellow deposit gadget punch feel pistol purity garden gain pause lava artist radar vault illness champion comfort call abstract good') 
+        const accCreator = await stdlib.newAccountFromMnemonic(private_key) 
         
         if(await stdlib.getProvider().length == 0){
             stdlib.setProviderByName('TestNet'); console.log(`TestNet has been set as the provider`);
