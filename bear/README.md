@@ -3,7 +3,7 @@
 This template provides an easy way for me to participate in fun challenges, and just use this repo.
 
 ## Participation on 08/06/2022 (Check Demo Video below) :
-[**Check out the video demo**](https://vimeo.com/737210227/51965e4960)
+[**Check out the video demo**](https://reach.sundayakins.repl.co/raffle)
 
 [**Check out the VERCEL live dapp here**](https://reachbear-whitelist.vercel.app/raffle)
 
