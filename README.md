@@ -2,6 +2,15 @@
 
 This template provides an easy way for me to participate in fun challenges, and just use this repo.
 
+## Participation on 08/06/2022 (Check Demo Video below) :
+[**Check out the video demo**](https://vimeo.com/737210227/51965e4960)
+
+[**Check out the VERCEL live dapp here**](https://reachbear-whitelist.vercel.app/raffle)
+
+[**Check out the rsh code here**](https://github.com/asolpshinning/Reach/blob/main/bear/rsh/raffle.rsh)
+
+[**Check out the NextJS repo here**](https://github.com/asolpshinning/Reach/tree/main/bear)
+
 ## Participation on 07/30/2022 (Check Demo Video below) :
 [**Check out the video demo**](https://vimeo.com/735006862/8b61fc92aa)
 
