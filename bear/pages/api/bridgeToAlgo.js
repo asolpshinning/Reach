@@ -1,33 +1,45 @@
 const loadStdlib = require( "@reach-sh/stdlib");
 import * as backendCtc from '../../reachBackend/test.main.mjs';
 const private_key = require('./env.js').PRIVATE_KEY
+const Web3 = require('web3');
+const {authenticate} = require('./authenticate.js');
+import { nftContract } from '../../ethContracts/erc721.js';
 
+const infura = `https://goerli.infura.io/v3/eaf55bdd847a49a6a4701f2ef30e96f8`;
+const web3 = new Web3(infura);
+//write a function that finds how many enteries is in an object
+const count = (obj) => {
+    let count = 0;
+    for(let key in obj){
+        if(obj.hasOwnProperty(key)){
+            count++;
+        }
+    }
+    return count;
+}
  const handler = async(request, res) => {
+    let authenticated = false;
     let req = request.body;
     let ctcId = `deployment pending`
     let nft = `not deployed yet`
-    //let providerSet = false;
-    
+
     const deploySmartContract = async() => {
         //connect wallet
         const stdlib = loadStdlib.loadStdlib({ REACH_CONNECTOR_MODE: "ALGO" });
         const accCreator = await stdlib.newAccountFromMnemonic(private_key) 
-        
-        if(await stdlib.getProvider().length == 0){
-            stdlib.setProviderByName('TestNet'); console.log(`TestNet has been set as the provider`);
-        }
+        stdlib.setProviderByName('TestNet'); console.log(`TestNet has been set as the provider`);
 
-        //connect to backend
-        const ctcCreator = accCreator.contract(backendCtc);
-        console.log(`...backend now connected`);
         const deployToken = async() => {
             //Launch tokens
             const bT = await stdlib.launchToken(accCreator, req.tokenName, req.tokenSymbol , {decimals: 0, supply: 1, url: req.url, /* metadataHash: req.metadataHash */});
-            console.log('This is the ID of the backing token: ', bT.id._hex);
-            console.log('Backing token ID in plain number: ', stdlib.bigNumberToNumber(bT.id._hex));
+            console.log('This is the ID of the NFT: ', bT.id._hex);
+            console.log('Algorand NFT ID in plain number: ', stdlib.bigNumberToNumber(bT.id._hex));
             return String(stdlib.bigNumberToNumber(bT.id._hex));
-        
         }
+        //connect to backend
+        const ctcCreator = accCreator.contract(backendCtc);
+        console.log(`...backend now connected`);
+        
         await Promise.all([
             deployToken().then((nftId) => {
                 nft = nftId;
@@ -39,29 +51,43 @@ const private_key = require('./env.js').PRIVATE_KEY
                             console.log(`SUCCESS: this is the deployed contract id: ${id} and ${msg}`);
                         }
                         ) 
-                        return {NFT: nftId, Bridger: req.bridger.current }
+                        return {NFT: nftId, Bridger: req.bridgerOnAlgo }
                         
                     },
-                    iDeployed: (msg) => {
+                    iDeployed: async(msg) => {
                         console.log(msg + ` and ${ctcId} is the contract ID`);
+                        
                     }
-                }) ///.then(save NFT in the contract for bridger to claim) => Start from Here
+                }).then(() => {
+                }).catch((err) => {
+                    console.log(`ERROR: central contract has not been fully deployed`, err);
+                })
             }),
             
         ])
         return [ctcId, nft];
   }
   try{
-    deploySmartContract().then((a) => {
-        //set timeout
-        setTimeout(() => {
-            res.status(200).json({ success: `Contract deployed successfully with Contract id: ${ctcId}`, NFTid : a[1], contractId : `${ctcId}` })
-        }, 18000)
+    authenticate(req.ethNftCtcId).then(async(auth) => {
+        console.log( auth);
+        if(auth.from == req.bridgerOnEth && auth.to == `0x7a403d1f0CF58EDa5D3047d856D2525cbbc993f2` 
+        && auth.tokenId == req.tokenId && auth.eventId !== `none`) { //for greater security, we should check the eventId is not any saved in databse before
+            authenticated = true;
+            console.log(`authentication success`);
+            deploySmartContract().then((a) => {
+                //set timeout
+                setTimeout(() => {
+                    res.status(200).json({ success: `Contract deployed successfully with Contract id: ${ctcId}`, NFTid : a[1], contractId : `${ctcId}` })
+                }, 25000)
+                }
+            )
+        } else {
+            console.log(`authentication failed`);
+            res.status(500).json({error: `authentication failed: Could not confirm locking of your NFT for bridging`});
         }
-    )
-        
-
-
+    }).catch(error => {
+        console.log(`there is an error while authenticating: `, error);
+    })
 } catch (err) {
     console.log(`error: `, err);
     res.status(500).json({ error: err });

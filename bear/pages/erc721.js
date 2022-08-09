@@ -5,12 +5,14 @@ import React from "react";
 import { useState, useRef, useEffect } from "react";
 import { ALGO_MyAlgoConnect as MyAlgoConnect } from '@reach-sh/stdlib';
 import 'bulma/css/bulma.css'
-import loadStdlib from '@reach-sh/stdlib'
+import loadStdlib from '@reach-sh/stdlib';
+import * as backendCtc from '../reachBackend/test.main'
 
 export default function Erc721() {
     //const ctcId = '0x7a403d1f0CF58EDa5D3047d856D2525cbbc993f2';
     const [web3, setWeb3] = useState()
     const address = useRef('')
+    const algorandAddress = useRef('')
     const ctcId = useRef('')
     const [error, setError] = useState('')
     const [successMsg, setSuccessMsg] = useState('')
@@ -18,7 +20,10 @@ export default function Erc721() {
     const [image, setImage] = useState(null);
     const [metaData, setMetaData] = useState(null);
     const [URL, setURL] = useState('');
-    const wallConn = useRef(false)
+    const wallConn = useRef(false);
+    const algoCtcId = useRef('');
+    const [bridgeButton, setBridgeButton] = useState("button is-link");
+    const running = useRef(true);
 
     //useful function to getELement by id
     const getElement = (id) => {
@@ -82,44 +87,66 @@ export default function Erc721() {
         if(wallConn.current !== true){alert('Let us connect your wallet...')}
         if(wallConn.current !== true) connectWallet()        
         const tokenId = parseInt(getElement('nftUrl'))
+        algorandAddress.current = getElement('algorandAddress');
+        if(algorandAddress.current.length <= 0){alert(`Please enter a valid Algorand address`); return}
         setError('')
         setSuccessMsg('')
         console.log(`address of person bridging :: ${address.current}`)
 
         const deployToken = async() => {
-            /* let reach = await loadStdlib.loadStdlib({ REACH_CONNECTOR_MODE: "ALGO" });
-            reach.setWalletFallback(reach.walletFallback({ providerEnv: 'TestNet', MyAlgoConnect }));
-            const accCreator = await reach.getDefaultAccount();
-            //Launch tokens
-            const bT = await reach.launchToken(accCreator, metaData.symbol, metaData.Name, {decimals: 0, supply: 1, url: URL, metadataHash: ''});
-            console.log('This is the ID of the bridged token on Algorand: ', reach.bigNumberToNumber(bT.id._hex));
-            alert(`This is the ID of the bridged NFT on Algorand:  ${reach.bigNumberToNumber(bT.id._hex)}`); */
-            const res = await fetch('api/bridgeToAlgo',{
-                method : 'POST',
-                body: JSON.stringify({'bridger' : address.current, 'name': 0, 'url': URL, 'metadataHash': 'metaDataHash', 'tokenId': tokenId}),
-                headers: {'Content-Type' : 'application/json'},
-            })
-            const data = await res.json();
-            console.log(data)
-            alert(`This is the ID of your "NFT" waiting for you to claim: `, data.NFT);
+            const tokenIdd = parseInt(getElement('nftUrl'))
+            const ctcIdd = getElement('erc721nftId')
+            let algoAddr = getElement('algorandAddress'); algorandAddress.current = algoAddr;
+            if(algorandAddress.current == ''){alert('Please enter your Algorand address'); return}
+            try{
+                const res = await fetch('api/bridgeToAlgo',{
+                    method : 'POST',
+                    body: JSON.stringify({"ethRecAddr" : address.current, "ethNftCtcId": ctcIdd, "bridgerOnEth" : address.current, "bridgerOnAlgo" : algoAddr, "name": '', 'url': URL, "metadataHash": "metaDataHash", "tokenId": tokenIdd}),
+                    headers: {'Content-Type' : 'application/json'},
+                })
+                const data = await res.json();
+                if(data.contractId) setBridgeButton("button is-link is-loading");
+                if(data.contractId) alert(`This Algorand Bridge contract now holds your NFT waiting to be claimed (write it down): ${data.contractId}`)
+                if(data.contractId) alert(`This is the ID of your "NFT" waiting for you to claim after opting in:  ${data.NFTid}`);
+                if(data.contractId){
+                    algoCtcId.current = data.contractId;
+                    alert(`You can now go ahead and claim your NFT on Algorand on the next prompt`);
+                    optinToNFT(data.NFTid);
+                    runAPI('claimNFT');
+                } else {
+                    setBridgeButton("button is-link");
+                    alert(`Server authentication failed. Please try again`)};
+            } catch (error){
+                alert(`error: `, error)
+            }
+            
         }
         let count = 0
         if(wallConn.current == true) try {
             if(isNaN(tokenId)){alert(`Please enter a valid NFT ID. You entered this invalid value: "${getElement('nftUrl')}"`); return}
+            setBridgeButton("button is-link is-loading")
             ctcId.current.methods.transferFrom(address.current, '0x7a403d1f0CF58EDa5D3047d856D2525cbbc993f2', tokenId).send({
                 from: address.current,
                 gas: 300000,
                 gasPrice: null
+            }).on('error', function(error, receipt) {
+                setBridgeButton("button is-link")
+                running.current = false;
+                alert(`There is an error: ${JSON.stringify(error)}`);
             }).on('confirmation', function(confirmationNumber, receipt){
-                while(count < 1){
+                while(count < 1 && running.current == true){
                     getNftUri();
                     deployToken(); 
                     count++
                 }
+                if(running.current == false){setBridgeButton("button is-link")}
             })
         } catch(err) {
+            setBridgeButton("button is-link");
+            running.current = false;
             alert(err.message)
-            setError(err.message)
+            setError(err.message);
+            
         }
 
         
@@ -162,19 +189,107 @@ export default function Erc721() {
         }
     }
 
-    const deployToken = async() => {
-        const res = await fetch('api/bridgeToAlgo',{
-            method : 'POST',
-            body: JSON.stringify({'bridger' : address, 'name': 0, 'url': URL, 'metadataHash': 'metaDataHash', 'tokenId': parseInt(getElement('nftUrl'))}),
-            headers: {'Content-Type' : 'application/json'},
-        })
-        const data = await res.json();
-        alert(`This contract now holds your NFT waiting to be claimed (write it down): ${data.contractId}`)
-        alert(`This is the ID of your "NFT" waiting for you to claim:  ${data.NFTid}`);
-        if(data.contractId != `deployment pending`){
-            alert(`You can now go ahead and claim your NFT on Algorand. Click claim NFT`)
-        }
+    //ALGORAND
+    let Bool = 'Bool';
+    let UInt = 'UInt';
+
+    const API = (arg = {apiName: [['']]}) => {
+        return arg;
     }
+    const Fun = (arg1, arg2 , arg3, arg4) => {
+        return [arg1, arg2, arg3, arg4]
+    }
+    //this is an input that needs to be provided by the smart contract developer
+    const User = API({
+        approveBridge : Fun([], Bool, [], `Backend Approve Bridge`),
+        lockNFT : Fun([], Bool, [], `Bridger Lock NFT`),
+        claimNFT : Fun([], Bool, [], `Bridger Claim NFT`),
+    });
+    
+      
+      const [algoAddress, setAlgoAddress] = useState("Connect Your Wallet. Click 'connect'");
+      const [algoBalance, setAlgoBalance] = useState(0);
+     //
+      const connect = async () => {
+        const reach = loadStdlib.loadStdlib({REACH_CONNECTOR_MODE: "ALGO"});
+        reach.setWalletFallback(reach.walletFallback({
+        providerEnv: 'TestNet', MyAlgoConnect }));
+        const acc = await reach.getDefaultAccount();
+        setAlgoAddress(acc.getAddress());
+        setAlgoBalance(reach.formatCurrency((await reach.balanceOf(acc))), 4);
+        //
+      };
+      const checkAlgoNftBalance = async () => {
+        return algoBalance;
+        }
+      //API calling
+      const callAPI = async (reachBackend, ctcDeployed, apiName, apiArg) => {
+        const reach = loadStdlib.loadStdlib({REACH_CONNECTOR_MODE: "ALGO"});
+        reach.setWalletFallback(reach.walletFallback({providerEnv: 'TestNet', MyAlgoConnect }));
+        const acc = await reach.getDefaultAccount();
+        const ctc = acc.contract(reachBackend, ctcDeployed);
+
+        const call = async (f) => { 
+            let res = undefined;
+            try {
+                res = await f();
+                if (res == `no`) {console.log(`"${apiName}" API is not available from Reach backend`); 
+                    alert(`"${apiName}" API is not available from Reach backend`);
+                    setBridgeButton("button is-link");
+                }
+                else {console.log(`the "${apiName}" API has successfully worked. Here is the response:`, res)
+                    alert(`the "${apiName}" API has successfully worked. Here is the response: ${res}`)
+                    setBridgeButton("button is-link")
+                }
+            } catch (e) {
+                res = [`err`, e]
+                console.log(`there is an error while running "${apiName} API: "`, e);
+                alert(`there is an error while running "${apiName} API: ${e}`);
+                setBridgeButton("button is-link");
+
+            }
+        };
+        //
+        const apis = ctc.a;
+        call(async () => {
+          let apiReturn ; ``;
+          for (const x in apis){
+            if(x == apiName){
+              apiReturn = await apis[apiName](...apiArg);
+            } 
+          }
+          if(apiReturn == ``){
+                apiReturn = `no`
+          }
+            return apiReturn;
+        });
+      }
+
+      // this is the function that executes and call the callAPI
+      const runAPI = (apiName) => {
+        let arrArg = [];
+        let input = User[apiName][0].map(
+          (j, index) => {
+            return j == UInt ? parseInt(getElement(`${apiName}${j}${index+1}`)) : getElement(`${apiName}${j}${index+1}`);        
+          }
+        )
+        console.log(`this is input: `, input);
+       callAPI(backendCtc, algoCtcId.current, apiName, input )
+      }
+
+    const optinToNFT = async (token) => {
+        const reach = loadStdlib.loadStdlib({REACH_CONNECTOR_MODE: "ALGO"});
+        reach.setWalletFallback(reach.walletFallback({providerEnv: 'TestNet', MyAlgoConnect }));
+        const acc = await reach.getDefaultAccount();
+        await acc.tokenAccept(token)
+    }
+
+    const claimNft = async () => {
+         runAPI('claimNFT')
+    }
+
+    
+
     return (
         <div className={styles.container}>
             <nav className="navbar mt-4 mb-4">
@@ -186,20 +301,24 @@ export default function Erc721() {
             </div>
             </nav>
             <div className = 'mb-5'>
-                <p>Enter the ERC721 NFT Contract ID</p>
-                <input class = 'input is-info is-medium mb-2' id = 'erc721nftId' ></input>
-                <button  class="button is-warning" onClick = {checkNftBalance}>Check your NFT Balance (ERC-721)</button> <br/>
+                <p>Enter the ERC721 NFT Contract ID: </p>
+                <input className = 'input is-info is-medium mb-2' id = 'erc721nftId' ></input>
+                <button  className="button is-warning" onClick = {checkNftBalance}>Check your NFT Balance (ERC-721)</button> <br/>
             </div>
             <div className = 'mb-5'>
-                <p>Enter the token ID</p>
-                <input class = 'input is-info is-medium mb-2' id = 'nftUrl'></input>
-                <button className="button is-link" onClick = {bridgeNFT}>Bridge NFT</button> <br/><br/>
-                <button className="button is-danger" onClick = {deployToken}>BackEndTesting(Do not use)</button>
+                <p>Enter the ERC721 token ID: </p>
+                <input className = 'input is-info is-medium mb-2' id = 'nftUrl'></input><br/>
+                <p>Enter your Algorand Wallet Address that will receive Algorand NFT: </p>
+                <input className = 'input is-info is-medium mb-2' id = 'algorandAddress'></input>
+                <button className= {bridgeButton} onClick = {bridgeNFT}>Bridge NFT</button> <br/><br/>
+                {/* <button className="button is-primary" onClick = {claimNft}> Claim Algorand NFT</button> */}
+                {/* <button className="button is-danger" onClick = {deployToken}>Test BackEnd</button> <br/><br/> */}
+
 
             </div>
             <div className = 'mb-5'>
                 
-                <button  class="button is-info is-outlined" onClick = {getNftUri}>Check NFT URL</button> <br/>
+                <button  className="button is-info is-outlined" onClick = {getNftUri}>Check NFT URL</button> <br/>
                 <h3 style = {{color : 'green'}}>
                     {successMsg}
                 </h3>
